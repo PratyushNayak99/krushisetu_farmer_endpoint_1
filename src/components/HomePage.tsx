@@ -11,7 +11,10 @@ interface HomePageProps {
   marketPrices: MarketPrice[];
   language: "odia" | "english";
   isOffline: boolean;
-  onNavigate: (view: "add-harvest" | "batch-tracking" | "market-prices" | "payments", batch?: Batch) => void;
+  onNavigate: (
+    view: "add-harvest" | "batch-tracking" | "market-prices" | "payments",
+    batch?: Batch
+  ) => void;
   onLanguageToggle: () => void;
 }
 
@@ -38,7 +41,7 @@ const translations = {
   },
   english: {
     welcome: "Welcome",
-    dashboard: "Dashboard", 
+    dashboard: "Dashboard",
     addNewHarvest: "Add New Harvest",
     myBatches: "My Batches",
     recentPayments: "Recent Payments",
@@ -51,7 +54,7 @@ const translations = {
     sold: "Sold",
     qualityCheck: "Quality Check",
     listed: "Listed",
-    inTransit: "In Transit", 
+    inTransit: "In Transit",
     atMandi: "At Mandi",
     viewAll: "View All",
     rupees: "₹"
@@ -63,6 +66,15 @@ const cropImages = {
   millet: "https://images.unsplash.com/photo-1623066798929-946425dbe1b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtaWxsZXQlMjBncmFpbiUyMGFncmljdWx0dXJlfGVufDF8fHx8MTc1NzczODMxNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
   corn: "https://images.unsplash.com/photo-1608995855173-bb65a3fe1bec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxjb3JuJTIwbWFpemUlMjBjcm9wfGVufDF8fHx8MTc1NzczODMxOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
   tomato: "https://images.unsplash.com/photo-1755123187614-3b922872bff0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHx0b21hdG8lMjB2ZWdldGFibGVzJTIwaGFydmVzdHxlbnwxfHx8fDE3NTc3MzgzMjF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+};
+
+// 🔥 Tailwind-safe mapping (no dynamic strings)
+const statusColors: Record<Batch["status"], string> = {
+  sold: "text-green-600 bg-green-50",
+  "at-mandi": "text-blue-600 bg-blue-50",
+  "in-transit": "text-yellow-600 bg-yellow-50",
+  "quality-check": "text-orange-600 bg-orange-50",
+  listed: "text-gray-600 bg-gray-50"
 };
 
 export default function HomePage({
@@ -77,17 +89,6 @@ export default function HomePage({
   const t = translations[language];
   const recentBatches = batches.slice(0, 3);
   const recentPayment = payments[0];
-
-  const getStatusColor = (status: Batch["status"]) => {
-    switch (status) {
-      case "sold": return "text-green-600 bg-green-50";
-      case "at-mandi": return "text-blue-600 bg-blue-50";
-      case "in-transit": return "text-yellow-600 bg-yellow-50";
-      case "quality-check": return "text-orange-600 bg-orange-50";
-      case "listed": return "text-gray-600 bg-gray-50";
-      default: return "text-gray-600 bg-gray-50";
-    }
-  };
 
   const getStatusText = (status: Batch["status"]) => {
     const statusMap = {
@@ -109,7 +110,7 @@ export default function HomePage({
             <h1 className="text-xl font-medium">{t.welcome}</h1>
             <p className="text-green-100 text-sm">AnnaData</p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             {/* Offline/Online Indicator */}
             <div className="flex items-center gap-1">
@@ -120,7 +121,7 @@ export default function HomePage({
               )}
               <span className="text-xs">{isOffline ? t.offline : t.online}</span>
             </div>
-            
+
             {/* Language Toggle */}
             <Button
               variant="ghost"
@@ -148,7 +149,7 @@ export default function HomePage({
 
       {/* Main Content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        {/* Add New Harvest - Primary Action */}
+        {/* Add New Harvest */}
         <Card className="mb-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
           <Button
             onClick={() => onNavigate("add-harvest")}
@@ -171,7 +172,7 @@ export default function HomePage({
               {t.viewAll}
             </Button>
           </div>
-          
+
           <div className="space-y-3">
             {recentBatches.map((batch) => (
               <div
@@ -187,7 +188,11 @@ export default function HomePage({
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <p className="font-medium capitalize">{batch.cropType}</p>
-                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(batch.status)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        statusColors[batch.status] || "text-gray-600 bg-gray-50"
+                      }`}
+                    >
                       {getStatusText(batch.status)}
                     </span>
                   </div>
@@ -213,11 +218,12 @@ export default function HomePage({
                 {t.viewAll}
               </Button>
             </div>
-            
+
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
               <div>
                 <p className="font-medium text-green-800">
-                  {t.rupees}{recentPayment.amount.toLocaleString()}
+                  {t.rupees}
+                  {recentPayment.amount.toLocaleString()}
                 </p>
                 <p className="text-sm text-green-600">{recentPayment.date}</p>
               </div>
@@ -240,10 +246,13 @@ export default function HomePage({
               {t.viewAll}
             </Button>
           </div>
-          
+
           <div className="space-y-3">
             {marketPrices.slice(0, 3).map((price, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
                 <div className="flex items-center gap-3">
                   <ImageWithFallback
                     src={cropImages[price.crop as keyof typeof cropImages] || cropImages.rice}
@@ -257,10 +266,13 @@ export default function HomePage({
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-green-600">
-                    {t.rupees}{price.price}
+                    {t.rupees}
+                    {price.price}
                   </p>
                   <p className="text-sm text-gray-600">/{price.unit}</p>
                 </div>
+                
+
               </div>
             ))}
           </div>
